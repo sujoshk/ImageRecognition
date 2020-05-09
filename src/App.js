@@ -97,7 +97,7 @@ class App extends React.Component {
 
     .then(response => {
       if(response) {
-        fetch('https://arcane-journey-85462.herokuapp.com/image',{
+        fetch('https://arcane-journey-85462.herokuapp.com:3000/image',{
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
