@@ -1,21 +1,20 @@
 import React from 'react';
 import Navigation from './components/navigation/navigation.jsx';
+import Register from './components/Register/Register.jsx';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition.jsx';
 import Logo from './components/logo/logo.jsx';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm.jsx';
 import Rank from './components/Rank/Rank.jsx';
 import Particles from 'react-particles-js';
-import Clarifai from 'clarifai';
+
 import SignIn from './components/SignIn/SignIn.js';
 
 
 import './App.css';
-import 'tachyons';
-import { render } from '@testing-library/react';
+import  'tachyons';
 
-const app = new Clarifai.App({
-  apiKey: '38ccb2eed5b4447ea93d49d6fa79dd9a'
- });
+
+
 
 const particleOptions = {  
   number: {
@@ -27,16 +26,42 @@ const particleOptions = {
   }
 }
 
+const initialState = {
+  input: '',
+  imageUrl: '',
+  box: {},
+  route: 'signIn',
+  isSignedIn: false,
+  user: {
+    id: '',
+    name: '',
+    email: '',
+    password: '',
+    entries: 0,
+    joined: new Date()
+  }
+}
 class App extends React.Component {
   constructor() {
     super();
-    this.state = {
-      input: '',
-      imageUrl: '',
-      box: {},
-      route: 'signIn'
-    }
+    this.state = initialState;    
   }
+
+
+  loadUser = (data) => {
+    this.setState({
+      user: {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      entries: data.entries,
+      joined: data.joined
+      }
+    });
+  };
+
+
 
   calculateFaceLocation =(data) => {
     const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box
@@ -61,38 +86,73 @@ class App extends React.Component {
 
   onSubmit = () => {
     this.setState({imageUrl: this.state.input});
-    app.models
-    .predict(
-    Clarifai.FACE_DETECT_MODEL,
-        this.state.input
-    )
-    .then(response => this.displayFaceBox(this.calculateFaceLocation(response)))
+    fetch('https://git.heroku.com/arcane-journey-85462.git/imageurl',{
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+      input: this.state.input
+      })
+    }) 
+    .then(response => response.json())
+
+    .then(response => {
+      if(response) {
+        fetch('https://git.heroku.com/arcane-journey-85462.git/image',{
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+      input: this.state.input
+      })
+    })
+        .then(response => response.json())
+        .then(count => {
+          this.setState(Object.assign(this.state.user, {entries: count}))
+        })
+        .catch(console.log);
+    }
+      this.displayFaceBox(this.calculateFaceLocation(response))
+    })
       //  console.log(response.outputs[0].data.regions[0].region_info.bounding_box);
-    .catch(err => console.log(err));
+    
+      .catch(err => console.log(err));
+    
   }
 
   onRouteChange = (route) => {
+    if (route === 'signOut') {
+      this.setState(initialState)
+    } else if (route === 'home') {
+      this.setState({isSignedIn: true})
+    }
     this.setState({route: route});
   }
 
   render() {
+    const { isSignedIn, imageUrl, route, box, user} = this.state;
     return (
       <div className="App">
         <Particles className='particles'        
           params={particleOptions}
           />          
-        <Navigation onRouteChange={this.onRouteChange}/>
-        { this.state.route === 'signIn' 
-          ?<SignIn onRouteChange={this.onRouteChange}/>
-          :<div>
+        <Navigation isSignedIn={isSignedIn} onRouteChange={this.onRouteChange}/>
+        {route === 'home' 
+          ?
+          <div>
               <Logo />
-              <Rank/>
+              <Rank name={user.name} entries={user.entries}/>
               <ImageLinkForm 
               onSubmit={this.onSubmit} 
               onInputChange={this.onInputChange}
               />
-              <FaceRecognition box={this.state.box} imageUrl={this.state.imageUrl}/> 
+              <FaceRecognition box={box} imageUrl={imageUrl}/> 
             </div>
+          
+          : (
+            this.state.route === 'signIn' 
+            ? <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>  
+            : <Register loadUser = {this.loadUser} onRouteChange={this.onRouteChange}/>
+          )
+          
         }          
       </div>
     );
