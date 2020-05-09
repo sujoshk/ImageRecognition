@@ -86,7 +86,7 @@ class App extends React.Component {
 
   onSubmit = () => {
     this.setState({imageUrl: this.state.input});
-    fetch('https://git.heroku.com/arcane-journey-85462.git/imageurl',{
+    fetch('https://arcane-journey-85462.herokuapp.com/imageurl',{
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -97,7 +97,7 @@ class App extends React.Component {
 
     .then(response => {
       if(response) {
-        fetch('https://git.heroku.com/arcane-journey-85462.git/image',{
+        fetch('https://arcane-journey-85462.herokuapp.com/image',{
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
