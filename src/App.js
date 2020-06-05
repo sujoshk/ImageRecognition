@@ -97,11 +97,11 @@ class App extends React.Component {
 
     .then(response => {
       if(response) {
-        fetch('https://arcane-journey-85462.herokuapp.com:3000/image',{
-      method: 'post',
+        fetch('https://arcane-journey-85462.herokuapp.com/image',{
+      method: 'put',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-      input: this.state.input
+      input: this.state.user.id
       })
     })
         .then(response => response.json())
