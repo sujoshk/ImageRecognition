@@ -22,7 +22,7 @@ class Register extends React.Component {
             this.setState({name: event.target.value})
         };
         onSubmitSignIn= () => {
-            fetch('https://arcane-journey-85462.herokuapp.com/register', {
+            fetch('https://git.heroku.com/arcane-journey-85462.git/signin', {
                 method: 'post',
                 headers: {'Content-type': 'application/json'},
                 body: JSON.stringify({
